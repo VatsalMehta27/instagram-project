@@ -1,3 +1,5 @@
+## Paper Summary
+
 ### **Motivation/Contribution**
 
 Goal: Multimodal VAE trained on image and text content of social media posts to identify features for detecting fake news
