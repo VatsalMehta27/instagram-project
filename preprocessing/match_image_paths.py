@@ -1,16 +1,22 @@
 import pandas as pd
 from numpy import nan
 import tarfile
+from os.path import exists
 
 def get_first_image_num(username: str) -> int:
     folder_path = f"data/img/{username}.tar.gz"
-
-    with tarfile.open(folder_path, "r:gz") as folder:
-        img_path_names = map(lambda img_path: int(img_path.split("/")[1].split(".")[0]), folder.getnames()[1:])
-
-        assert max(img_path_names) - min(img_path_names) == len(img_path_names) - 1
     
-    return min(img_path_names)
+    if exists(folder_path):
+        with tarfile.open(folder_path, "r:gz") as folder:
+            img_path_names = list(map(lambda img_path: int(img_path.split("/")[1].split(".")[0]), folder.getnames()[1:]))
+            
+            print(username, img_path_names) 
+            
+            assert (max(img_path_names) - min(img_path_names) + 1) == len(img_path_names)
+    
+        return min(img_path_names)
+
+    return -1
 
 # Read in the all_posts_metadata CSV file
 all_posts_metadata = pd.read_csv("data/all_posts_metadata.csv")
