@@ -3,7 +3,7 @@ from numpy import nan
 import tarfile
 
 def get_first_image_num(username: str) -> int:
-    folder_path = f"/img/{username}.tar.gz"
+    folder_path = f"data/img/{username}.tar.gz"
 
     with tarfile.open(folder_path, "r:gz") as folder:
         img_path_names = map(lambda img_path: int(img_path.split("/")[1].split(".")[0]), folder.getnames()[1:])
