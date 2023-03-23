@@ -5,6 +5,15 @@ from gensim.models import Word2Vec
 def clean_text(string: str):
     string = string.lower()
 
+    # Replaces all contractions
+    string = re.sub(r"\'s", " is ", string)
+    string = re.sub(r"\'ve", " have ", string)
+    string = re.sub(r"\'re", " are ", string)
+    string = re.sub(r"\'d", " had ", string)
+    string = re.sub(r"\'ll", " will ", string)
+    string = re.sub(r"\'m", " am", string)
+    string = re.sub(r"n\'t", " not", string)
+
     # Remove all special characters
     string = re.sub(r'[^a-zA-Z0-9\s]', '', string)
     # Remove all newlines
