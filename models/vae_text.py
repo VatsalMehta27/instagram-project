@@ -108,14 +108,14 @@ class TextVAE(nn.Module):
         return decoded_text, mu, logvar, classifier_result
 
 
-    def reparametrize(mu, logvar):
+    def reparametrize(self, mu, logvar):
         std_gauss_sample = torch.randn(size=mu.shape).to(self.device)
 
         sampled_latent_vector = mu + (logvar * std_gauss_sample)
 
         return sampled_latent_vector
 
-    def loss_function(text, post_class, decoded_text, mu, logvar, predicted_class):
+    def loss_function(self, text, post_class, decoded_text, mu, logvar, predicted_class):
         text_recon_loss = nn.CrossEntropyLoss()(text, decoded_text)
 
         kl_divergence = -0.5 * torch.sum(1 + logvar - torch.square(mu) - torch.exp(logvar))

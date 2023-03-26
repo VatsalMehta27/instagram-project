@@ -137,14 +137,14 @@ class MVAE(nn.Module):
         return decoded_text, decoded_img, mu, logvar, classifier_result
 
 
-    def reparametrize(mu, logvar):
+    def reparametrize(self, mu, logvar):
         std_gauss_sample = torch.randn(size=mu.shape).to(self.device)
 
         sampled_latent_vector = mu + (logvar * std_gauss_sample)
 
         return sampled_latent_vector
 
-    def loss_function(text, img, post_class, decoded_text, decoded_img, mu, logvar, predicted_class):
+    def loss_function(self, text, img, post_class, decoded_text, decoded_img, mu, logvar, predicted_class):
         img_recon_loss = nn.MSELoss()(img, decoded_img)
 
         text_recon_loss = nn.CrossEntropyLoss()(text, decoded_text)

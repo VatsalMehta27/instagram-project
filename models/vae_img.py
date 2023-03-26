@@ -87,14 +87,14 @@ class MVAE(nn.Module):
         return decoded_img, mu, logvar, classifier_result
 
 
-    def reparametrize(mu, logvar):
+    def reparametrize(self, mu, logvar):
         std_gauss_sample = torch.randn(size=mu.shape).to(self.device)
 
         sampled_latent_vector = mu + (logvar * std_gauss_sample)
 
         return sampled_latent_vector
 
-    def loss_function(img, post_class, decoded_img, mu, logvar, predicted_class):
+    def loss_function(self, img, post_class, decoded_img, mu, logvar, predicted_class):
         img_recon_loss = nn.MSELoss()(img, decoded_img)
 
         kl_divergence = -0.5 * torch.sum(1 + logvar - torch.square(mu) - torch.exp(logvar))
