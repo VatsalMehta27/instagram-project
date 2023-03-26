@@ -7,8 +7,9 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device")
 
 class MVAE(nn.Module):
-    def __init__(self, hidden_dim, latent_size, text_embeddings, img_embedding_size):
+    def __init__(self, device, hidden_dim, latent_size, text_embeddings, img_embedding_size):
         super(MVAE, self).__init__()
+        self.device = device
         self.hidden_dim = hidden_dim
         self.latent_size = latent_size
         self.img_embedding_size = img_embedding_size
@@ -48,17 +49,17 @@ class MVAE(nn.Module):
         # Fully connected layer that takes the concatenated feature represenation (text + img)
         # to produce the shared representation
         self.latent_fc = nn.Sequential(
-            nn.Linear(2*self.hidden_dim, 2*self.hidden_dim),
+            nn.Linear(self.hidden_dim*2, self.latent_size),
             nn.Tanh(),
         )
 
 
         self.mu_layer = nn.Sequential(
-            nn.Linear(2*self.hidden_dim, self.latent_size), 
+            nn.Linear(self.latent_size, self.latent_size), 
             nn.ReLU(),
         )
         self.logvar_layer = nn.Sequential(
-            nn.Linear(2*self.hidden_dim, self.latent_size), 
+            nn.Linear(self.latent_size, self.latent_size), 
             nn.ReLU(),
         )
 
@@ -70,12 +71,13 @@ class MVAE(nn.Module):
         )
 
         self.dec_stacked_bi_lstm = TimeDistributed(
-                nn.Sequential(
-                    nn.LSTM(self.hidden_dim, self.hidden_dim, bidirectional=True, batch_first=True),
-                    nn.Tanh(),
-                    nn.LSTM(self.hidden_dim*2, self.hidden_dim, bidirectional=True, batch_first=True),
-                    nn.Tanh(),
-                ))
+            nn.Sequential(
+                nn.LSTM(self.hidden_dim, self.hidden_dim, bidirectional=True, batch_first=True),
+                nn.Tanh(),
+                nn.LSTM(self.hidden_dim*2, self.hidden_dim, bidirectional=True, batch_first=True),
+                nn.Tanh(),
+            )
+        )
 
         self.dec_text = nn.Softmax()
 
@@ -94,9 +96,9 @@ class MVAE(nn.Module):
 
         # Binary Classifier
         self.binary_classifier = nn.Sequential(
-            nn.Linear(self.latent_size, self.hidden_dim*2),
+            nn.Linear(self.latent_size, self.latent_size),
             nn.Tanh(),
-            nn.Linear(self.hidden_dim*2, self.hidden_dim),
+            nn.Linear(self.latent_size, self.hidden_dim),
             nn.Tanh(),
             nn.Linear(self.hidden_dim, 1),
             nn.Sigmoid(),
@@ -136,7 +138,7 @@ class MVAE(nn.Module):
 
 
     def reparametrize(mu, logvar):
-        std_gauss_sample = torch.randn(size=mu.shape).to(device)
+        std_gauss_sample = torch.randn(size=mu.shape).to(self.device)
 
         sampled_latent_vector = mu + (logvar * std_gauss_sample)
 
