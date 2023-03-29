@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from time_distributed import TimeDistributed
+from models.time_distributed import TimeDistributed
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -30,7 +30,7 @@ class TextVAE(nn.Module):
         )
 
         # Fully connected layer that produces the final text feature representation
-        self.enc_text_fc = nn.Sequntial(
+        self.enc_text_fc = nn.Sequential(
             nn.Linear(self.hidden_dim*2, self.hidden_dim),
             nn.Tanh(),
         )
