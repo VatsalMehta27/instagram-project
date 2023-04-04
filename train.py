@@ -1,4 +1,5 @@
 import pandas as pd
+
 # from preprocessing.preprocess_text import process_posts
 from preprocessing.preprocess_text import clean_text
 from preprocessing.gen_text_embeddings import generate_text_embeddings
@@ -10,13 +11,17 @@ from torch.optim import Adam
 
 print("Loading data...")
 instagram_data = pd.read_csv("data/instagram_data.csv")
-data = instagram_data.dropna(subset=["description"])
+data = instagram_data.dropna(subset=["description"]).reset_index(drop=True)
 print(f"Removed {len(instagram_data) - len(data)} rows due to N/A descriptions.")
 
 print("Processing post descriptions...")
 # post_descriptions = process_posts(data["description"].tolist())
 
-post_descriptions = data["description"].apply(lambda text: clean_text(text) if type(text) == str else text).tolist()
+post_descriptions = (
+    data["description"]
+    .apply(lambda text: clean_text(text) if type(text) == str else text)
+    .tolist()
+)
 post_classes = data["Party"]
 
 print("Generating text embeddings...")
@@ -27,33 +32,39 @@ dataset = TextDataset(post_descriptions, word_index_mapping, post_classes)
 
 # Start of abstractable code
 
-train_dataset, test_dataset = random_split(dataset, [int(len(dataset)*0.8), int(len(dataset)*0.2)])
+train_dataset, test_dataset = random_split(dataset, [0.8, 0.2])
+print(len(dataset))
+print(len(train_dataset))
+print(len(test_dataset))
 
 num_epochs = 10
-batch_size = 32
+batch_size = 16
 
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
 
 print(f"Using {device} device")
 
-model = TextVAE(device, 32, 32, text_embeddings).to(device)
+model = TextVAE(device, 32, 32, text_embeddings, dataset.padding_index).to(device)
 optimizer = Adam(model.parameters(), lr=1e-3)
 
 for epoch in range(num_epochs):
     model.train()
     train_loss = 0
 
-    for batch_idx, (text, party) in enumerate(train_loader):
+    for batch_idx, (text, party) in enumerate(train_dataloader):
         text = text.to(device)
 
         decoded_text, mu, logvar, classifier_result = model(text)
-
+        print(classifier_result)
         optimizer.zero_grad()
 
-        loss = model.loss_function(text, party, decoded_text, mu, logvar, classifier_result)
+        loss = model.loss_function(
+            text, party, decoded_text, mu, logvar, classifier_result
+        )
         loss.backward()
 
         train_loss += loss.data()

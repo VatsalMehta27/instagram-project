@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset
 
+
 class MVAEDataset(Dataset):
     def __init__(self, text, img_embeddings, post_classes):
         self.text = text

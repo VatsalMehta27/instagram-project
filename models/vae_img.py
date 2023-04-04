@@ -5,6 +5,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 print(f"Using {device} device")
 
+
 class MVAE(nn.Module):
     def __init__(self, device, hidden_dim, latent_size, img_embedding_size):
         super(MVAE, self).__init__()
@@ -15,13 +16,13 @@ class MVAE(nn.Module):
 
         # Generate Image Feature Representation
 
-        # Takes the VGG-19 image embeddings and passes through 2 fully connected layers 
+        # Takes the VGG-19 image embeddings and passes through 2 fully connected layers
         # to produce the final image feature representation
         self.gen_img_feature_rep = nn.Sequential(
             nn.Linear(self.img_embedding_size, self.img_embedding_size // 4),
             nn.Tanh(),
             nn.Linear(self.img_embedding_size // 4, self.hidden_dim),
-            nn.Tanh()
+            nn.Tanh(),
         )
 
         # Fully connected layer that takes the concatenated feature represenation (text + img)
@@ -31,13 +32,12 @@ class MVAE(nn.Module):
             nn.Tanh(),
         )
 
-
         self.mu_layer = nn.Sequential(
-            nn.Linear(self.latent_size, self.latent_size), 
+            nn.Linear(self.latent_size, self.latent_size),
             nn.ReLU(),
         )
         self.logvar_layer = nn.Sequential(
-            nn.Linear(self.latent_size, self.latent_size), 
+            nn.Linear(self.latent_size, self.latent_size),
             nn.ReLU(),
         )
 
@@ -51,7 +51,7 @@ class MVAE(nn.Module):
             nn.Tanh(),
             # final fc layer
             nn.Linear(self.img_embedding_size // 4, self.img_embedding_size),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
 
         # Binary Classifier
@@ -86,7 +86,6 @@ class MVAE(nn.Module):
 
         return decoded_img, mu, logvar, classifier_result
 
-
     def reparametrize(self, mu, logvar):
         std_gauss_sample = torch.randn(size=mu.shape).to(self.device)
 
@@ -97,13 +96,17 @@ class MVAE(nn.Module):
     def loss_function(self, img, post_class, decoded_img, mu, logvar, predicted_class):
         img_recon_loss = nn.MSELoss()(img, decoded_img)
 
-        kl_divergence = -0.5 * torch.sum(1 + logvar - torch.square(mu) - torch.exp(logvar))
+        kl_divergence = -0.5 * torch.sum(
+            1 + logvar - torch.square(mu) - torch.exp(logvar)
+        )
 
         binary_classifier_loss = nn.BCELoss()(post_class, predicted_class)
 
         print(img_recon_loss + kl_divergence)
         print(binary_classifier_loss)
 
-        loss = (img_recon_loss + kl_divergence + binary_classifier_loss) / decoded_img.shape[0]
+        loss = (
+            img_recon_loss + kl_divergence + binary_classifier_loss
+        ) / decoded_img.shape[0]
 
         return loss

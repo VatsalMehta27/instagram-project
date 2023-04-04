@@ -1,11 +1,12 @@
 import torch
 from torch import nn
 
+
 class TimeDistributed(nn.Module):
     def __init__(self, module):
         super(TimeDistributed, self).__init__()
         self.module = module
-        
+
     def forward(self, x):
         batch_size, time_steps, *input_shape = x.size()
         reshaped_x = x.view(-1, *input_shape)

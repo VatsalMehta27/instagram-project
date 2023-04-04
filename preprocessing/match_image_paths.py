@@ -5,15 +5,15 @@
 
 # def get_first_image_num(username: str) -> int:
 #     folder_path = f"data/img/{username}.tar.gz"
-    
+
 #     if exists(folder_path):
 #         with tarfile.open(folder_path, "r:gz") as folder:
 #             img_path_names = list(map(lambda img_path: int(img_path.split("/")[1].split(".")[0]), folder.getnames()[1:]))
-            
-#             print(username, img_path_names) 
-            
+
+#             print(username, img_path_names)
+
 #             assert (max(img_path_names) - min(img_path_names) + 1) == len(img_path_names)
-    
+
 #         return min(img_path_names)
 
 #     return -1
@@ -31,9 +31,9 @@
 # # Iterate through all the rows in the CSV
 # for index, row in all_posts_metadata.iterrows():
 #     username = row["username"]
-    
+
 #     # Gets the current image count for the usernmae
-#     # Returns None if the username doesn't have a counter initialized yet 
+#     # Returns None if the username doesn't have a counter initialized yet
 #     # (encountered for the first time while iterating)
 #     username_image_count = username_image_counter.get(username)
 
