@@ -101,7 +101,7 @@ class TextVAE(nn.Module):
             nn.Linear(self.latent_size, self.hidden_dim),
             nn.Tanh(),
             nn.Linear(self.hidden_dim, self.num_classes),
-            nn.Sigmoid(),
+            nn.Softmax(dim=-1),
         )
 
     def forward(self, text_input):
@@ -132,7 +132,7 @@ class TextVAE(nn.Module):
 
         dec_stacked_bi_lstm_result_1, _ = self.dec_stacked_bi_lstm_1(repeated_context)
         dec_stacked_bi_lstm_result_2, _ = self.dec_stacked_bi_lstm_2(dec_stacked_bi_lstm_result_1)
-        decoded_text = self.dec_text(dec_stacked_bi_lstm_result_2)#.view(batch_size, sequence_length, -1)
+        decoded_text = self.dec_text(dec_stacked_bi_lstm_result_2)
 
         return decoded_text, mu, logvar, classifier_result
 
